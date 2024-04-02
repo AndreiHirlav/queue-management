@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.*;
 public class Server implements Runnable{
     private BlockingQueue<Task> tasks;
     private AtomicInteger waitingPeriod;
+    private volatile Task currentTask;
 
     public Server() {
         this.tasks = new LinkedBlockingQueue<>();
@@ -22,7 +23,25 @@ public class Server implements Runnable{
     }
 
     public void run(){
+        while(true) {
+            try {
+                currentTask = tasks.take();
+                int remaining = currentTask.getServiceTime();
+                while(remaining > 0)
+                {
+                    Thread.sleep(1000);
+                    currentTask.setServiceTime(currentTask.getServiceTime() - 1);
+                    remaining--;
+                }
+                currentTask = null;
 
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Coada se inchide");
+                break;
+            }
+
+        }
     }
 
     public BlockingQueue<Task> getTasks() {
@@ -32,4 +51,16 @@ public class Server implements Runnable{
     public void setTasks(BlockingQueue<Task> tasks) {
         this.tasks = tasks;
     }
+
+    public AtomicInteger getWaitingPeriod() {
+        return waitingPeriod;
+    }
+
+    public Task getCurrentTask() {
+        return currentTask;
+    }
+
+
+
+
 }
