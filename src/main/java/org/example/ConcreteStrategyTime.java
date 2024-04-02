@@ -11,6 +11,9 @@ public class ConcreteStrategyTime implements Strategy{
 
         for(Server server : servers) {
             int currentTime = server.getWaitingPeriod().get();
+            if(server.getCurrentTask() != null) {
+                currentTime += server.getCurrentTask().getServiceTime();
+            }
             if(currentTime < shortestTime) {
                 shortestTime = currentTime;
                 fastestQueue = server;

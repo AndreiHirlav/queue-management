@@ -1,24 +1,36 @@
 package org.example;
 
+import org.example.view.GUI;
+
+import javax.swing.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
 public class SimulationManager implements Runnable{
-    public int timeLimit = 100;
-    public int maxProcessingTime = 10;
-    public int minProcessingTime = 2;
-    public int minArrivalTime = 2;
-    public int maxArrivalTime = 30;
-    public int numberOfServers = 3;
-    public int numberOfClients = 3;
-    public Strategy strategy = new ConcreteStrategyTime();
-
+    private int timeLimit;
+    private int maxProcessingTime;
+    private int minProcessingTime;
+    private int minArrivalTime;
+    private int maxArrivalTime;
+    private int numberOfServers;
+    private int numberOfClients;
+    private Strategy strategy;
+    private JTextArea resultsArea;
     private Scheduler scheduler;
     private List<Task> generatedTasks = new ArrayList<>();
 
-    public SimulationManager() {
+    public SimulationManager(int timeLimit, int maxProcessingTime, int minProcessingTime, int minArrivalTime, int maxArrivalTime, int numberOfServers, int numberOfClients, Strategy strategy, JTextArea resultsArea) {
+        this.timeLimit = timeLimit;
+        this.maxProcessingTime = maxProcessingTime;
+        this.minProcessingTime = minProcessingTime;
+        this.minArrivalTime = minArrivalTime;
+        this.maxArrivalTime = maxArrivalTime;
+        this.numberOfServers = numberOfServers;
+        this.numberOfClients = numberOfClients;
+        this.strategy = strategy;
         this.scheduler = new Scheduler(numberOfServers, strategy);
+        this.resultsArea = resultsArea;
         generateNRandomTasks();
     }
 
@@ -52,9 +64,9 @@ public class SimulationManager implements Runnable{
                     iterator.remove();
                 }
             }
-
+            displayState(currentTime);
             if(generatedTasks.isEmpty() && queuesEmpty()) {
-                System.out.println("Average waiting time: " + String.format("%.2f", computeWaitingAvg()));
+                print("Average waiting time: " + String.format("%.2f", computeWaitingAvg()));
                 break;
             }
 
@@ -64,22 +76,18 @@ public class SimulationManager implements Runnable{
                 Thread.currentThread().interrupt();
                 break;
             }
-            displayState(currentTime);
             currentTime++;
         }
+        if(currentTime == timeLimit)
+            print("Average waiting time: " + String.format("%.2f", computeWaitingAvg()) + "(time limit exceeded");
     }
 
     private void displayState(int currentTime) {
-        String filePath = "log.txt";
+        print("\nTime " + currentTime + "\n");
+        print("Waiting clients:\n");
 
-        try(FileWriter writer = new FileWriter(filePath, true)) {
-        System.out.println("\nTime " + currentTime);
-        writer.write("\nTime " + currentTime + "\n"); //file
-        System.out.println("Waiting clients:");
-        writer.write("Waiting clients:\n");
         for (Task task : generatedTasks) {
-            System.out.println("(" + task.getId() + ", " + task.getArrivalTime() + ", " + task.getServiceTime() + ");");
-            writer.write("(" + task.getId() + ", " + task.getArrivalTime() + ", " + task.getServiceTime() + ");\n");
+            print("(" + task.getId() + ", " + task.getArrivalTime() + ", " + task.getServiceTime() + ");\n");
         }
 
         //tiparesc fiecare server
@@ -103,11 +111,18 @@ public class SimulationManager implements Runnable{
             if (queueState.equals("Queue " + (i + 1) + ": ")) {//Ca sa tipareasca closed
                 queueState += "closed";
             }
-            writer.append(queueState + "\n");
-            System.out.println(queueState);
+            print(queueState + "\n");
         }
-        }
-        catch(IOException e){
+    }
+
+    //tipareste pe ecran, in fisier, in interfata
+    private void print(String output) {
+        String filePath = "log.txt";
+        try(FileWriter writer = new FileWriter(filePath, true)) {
+            System.out.print(output);
+            writer.write(output);
+            resultsArea.append(output);
+        } catch(IOException e) {
             e.printStackTrace();
         }
     }
@@ -129,10 +144,8 @@ public class SimulationManager implements Runnable{
 
         return result / numberOfClients;
     }
-    public static void main(String[] args) {
-        SimulationManager simulationManager = new SimulationManager();
-        Thread simulationThread = new Thread(simulationManager);
 
-        simulationThread.start();
+    public static void main(String[] args) {
+        GUI gui= new GUI();
     }
 }
