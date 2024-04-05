@@ -5,18 +5,20 @@ import java.util.concurrent.atomic.*;
 
 public class Server implements Runnable{
     private BlockingQueue<Task> tasks;
-    private AtomicInteger waitingPeriod;
+    private AtomicInteger servicePeriod;
     private volatile Task currentTask;
+    private int nrClients;  //as fi putut sa iau tasks + 1, dar e mai lizibil asa
 
     public Server() {
         this.tasks = new LinkedBlockingQueue<>();
-        this.waitingPeriod = new AtomicInteger(0);
+        this.servicePeriod = new AtomicInteger(0);
     }
 
     public void addTask(Task newTask){
         try {
             tasks.put(newTask);
-            waitingPeriod.addAndGet(newTask.getServiceTime());
+            servicePeriod.addAndGet(newTask.getServiceTime());
+            nrClients++;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -25,6 +27,7 @@ public class Server implements Runnable{
     public void run(){
         while(true) {
             try {
+                //iau primul proces din coada
                 currentTask = tasks.take();
                 int remaining = currentTask.getServiceTime();
                 while(remaining > 0)
@@ -34,6 +37,7 @@ public class Server implements Runnable{
                     remaining--;
                 }
                 currentTask = null;
+                nrClients--;
 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -48,19 +52,15 @@ public class Server implements Runnable{
         return tasks;
     }
 
-    public void setTasks(BlockingQueue<Task> tasks) {
-        this.tasks = tasks;
-    }
-
-    public AtomicInteger getWaitingPeriod() {
-        return waitingPeriod;
+    public AtomicInteger getServicePeriod() {
+        return servicePeriod;
     }
 
     public Task getCurrentTask() {
         return currentTask;
     }
 
-
-
-
+    public int getNrClients() {
+        return nrClients;
+    }
 }

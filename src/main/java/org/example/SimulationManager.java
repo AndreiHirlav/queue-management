@@ -19,6 +19,8 @@ public class SimulationManager implements Runnable{
     private JTextArea resultsArea;
     private Scheduler scheduler;
     private List<Task> generatedTasks = new ArrayList<>();
+    private int peakClients;
+    private int peakHour;
 
     public SimulationManager(int timeLimit, int maxProcessingTime, int minProcessingTime, int minArrivalTime, int maxArrivalTime, int numberOfServers, int numberOfClients, Strategy strategy, JTextArea resultsArea) {
         this.timeLimit = timeLimit;
@@ -56,6 +58,8 @@ public class SimulationManager implements Runnable{
         while(currentTime <= timeLimit)
         {
             Iterator<Task> iterator = generatedTasks.iterator();
+
+            //iau urmatorul task si daca ajung la arrivalTime, il trimit la procesat + il scot din generatedTask
             while(iterator.hasNext()) {
                 Task task = iterator.next();
 
@@ -65,8 +69,15 @@ public class SimulationManager implements Runnable{
                 }
             }
             displayState(currentTime);
+            if(computeNrClients() > peakClients) {
+                peakClients = computeNrClients();
+                peakHour = currentTime;
+            }
+
+            //daca am procesat toti clientii
             if(generatedTasks.isEmpty() && queuesEmpty()) {
-                print("Average waiting time: " + String.format("%.2f", computeWaitingAvg()));
+                print("Average service time: " + String.format("%.2f", computeWaitingAvg()) + "\n");
+                print("Peak hour: " + peakHour + "(" + peakClients + " clients)\n");
                 break;
             }
 
@@ -78,10 +89,13 @@ public class SimulationManager implements Runnable{
             }
             currentTime++;
         }
-        if(currentTime == timeLimit)
-            print("Average waiting time: " + String.format("%.2f", computeWaitingAvg()) + "(time limit exceeded");
+        if(currentTime == timeLimit) {   //daca am ajuns la time limit
+            print("Average service time: " + String.format("%.2f", computeWaitingAvg()) + "(time limit exceeded)\n");
+            print("Peak hour: " + peakHour + " (" + peakClients + " clients)\n");
+        }
     }
 
+    //construieste string-uri pentru afisare si le trimite spre afisat
     private void displayState(int currentTime) {
         print("\nTime " + currentTime + "\n");
         print("Waiting clients:\n");
@@ -127,6 +141,7 @@ public class SimulationManager implements Runnable{
         }
     }
 
+    //verifica daca toate cozile sunt goale
     private boolean queuesEmpty() {
         for (Server server : scheduler.getServers()) {
             if (!server.getTasks().isEmpty() || server.getCurrentTask() != null) {
@@ -136,13 +151,23 @@ public class SimulationManager implements Runnable{
         return true;
     }
 
+    //media
     private double computeWaitingAvg() {
         double result = 0;
         for(Server server : scheduler.getServers()) {
-            result += server.getWaitingPeriod().get();
+            result += server.getServicePeriod().get();
         }
 
         return result / numberOfClients;
+    }
+
+    private int computeNrClients() {
+        int totalClients = 0;
+        for(Server server : scheduler.getServers()) {
+            totalClients += server.getNrClients();
+        }
+
+        return totalClients;
     }
 
     public static void main(String[] args) {

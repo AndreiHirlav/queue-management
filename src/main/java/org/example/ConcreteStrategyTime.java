@@ -9,8 +9,9 @@ public class ConcreteStrategyTime implements Strategy{
         Server fastestQueue = null;
         int shortestTime = Integer.MAX_VALUE;
 
+        //iau coada cu service time cel mai mic, iau in considerare si current task
         for(Server server : servers) {
-            int currentTime = server.getWaitingPeriod().get();
+            int currentTime = server.getServicePeriod().get();
             if(server.getCurrentTask() != null) {
                 currentTime += server.getCurrentTask().getServiceTime();
             }

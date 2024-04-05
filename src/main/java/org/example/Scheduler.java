@@ -20,6 +20,7 @@ public class Scheduler {
         }
     }
 
+    //adaug task-ul in serverul potrivit
     public void dispatchTask(Task t) {
         strategy.addTask(servers, t);
     }

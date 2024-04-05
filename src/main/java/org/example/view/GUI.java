@@ -97,6 +97,7 @@ public class GUI extends JFrame{
         thread.start();
     }
 
+    //in interfata iau strategia sub forma de string, si in functie de val stringului stabilesc strategia
     private Strategy selectStrategy(String strat) {
         if(strat.equals("Go to shortest queue")) {
             return new ConcreteStrategyQueue();
