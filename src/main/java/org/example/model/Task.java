@@ -1,4 +1,4 @@
-package org.example;
+package org.example.model;
 
 public class Task {
     private int arrivalTime;

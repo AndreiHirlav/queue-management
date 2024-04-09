@@ -1,13 +1,12 @@
 package org.example.view;
-import org.example.ConcreteStrategyQueue;
-import org.example.ConcreteStrategyTime;
-import org.example.SimulationManager;
-import org.example.Strategy;
+import org.example.businessLogic.ConcreteStrategyQueue;
+import org.example.businessLogic.ConcreteStrategyTime;
+import org.example.businessLogic.SimulationManager;
+import org.example.businessLogic.Strategy;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
 import javax.swing.*;
 public class GUI extends JFrame{
     private JTextArea inputTime = new JTextArea(1, 10);

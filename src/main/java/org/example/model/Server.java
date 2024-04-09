@@ -1,5 +1,6 @@
-package org.example;
-import java.util.*;
+package org.example.model;
+import org.example.model.Task;
+
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 

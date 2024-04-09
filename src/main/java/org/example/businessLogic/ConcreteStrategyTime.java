@@ -1,8 +1,12 @@
-package org.example;
+package org.example.businessLogic;
+
+import org.example.businessLogic.Strategy;
+import org.example.model.Server;
+import org.example.model.Task;
 
 import java.util.List;
 
-public class ConcreteStrategyTime implements Strategy{
+public class ConcreteStrategyTime implements Strategy {
 
     @Override
     public void addTask(List<Server> servers, Task t) {

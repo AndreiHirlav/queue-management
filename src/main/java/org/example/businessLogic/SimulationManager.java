@@ -1,5 +1,7 @@
-package org.example;
+package org.example.businessLogic;
 
+import org.example.model.Server;
+import org.example.model.Task;
 import org.example.view.GUI;
 
 import javax.swing.*;

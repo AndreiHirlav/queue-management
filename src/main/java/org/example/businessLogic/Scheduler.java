@@ -1,4 +1,8 @@
-package org.example;
+package org.example.businessLogic;
+import org.example.businessLogic.Strategy;
+import org.example.model.Server;
+import org.example.model.Task;
+
 import java.util.*;
 public class Scheduler {
     private List<Server> servers;
