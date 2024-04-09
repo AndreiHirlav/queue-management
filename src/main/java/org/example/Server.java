@@ -8,16 +8,20 @@ public class Server implements Runnable{
     private AtomicInteger servicePeriod;
     private volatile Task currentTask;
     private int nrClients;  //as fi putut sa iau tasks + 1, dar e mai lizibil asa
+    private AtomicInteger totalWaiting;
 
     public Server() {
         this.tasks = new LinkedBlockingQueue<>();
         this.servicePeriod = new AtomicInteger(0);
+        this.totalWaiting = new AtomicInteger(0);
     }
 
     public void addTask(Task newTask){
         try {
             tasks.put(newTask);
             servicePeriod.addAndGet(newTask.getServiceTime());
+            newTask.setWaitingTime(totalWaiting.get());   //cand adaug clientul in lista ii dau si waiting time-ul curent
+            totalWaiting.addAndGet(newTask.getServiceTime());  //pe masura ce adaug clienti creste si waiting time
             nrClients++;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -34,6 +38,7 @@ public class Server implements Runnable{
                 {
                     Thread.sleep(1000);
                     currentTask.setServiceTime(currentTask.getServiceTime() - 1);
+                    totalWaiting.addAndGet(-1);   //si scade si waiting time
                     remaining--;
                 }
                 currentTask = null;

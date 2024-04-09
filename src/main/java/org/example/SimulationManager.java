@@ -19,6 +19,7 @@ public class SimulationManager implements Runnable{
     private JTextArea resultsArea;
     private Scheduler scheduler;
     private List<Task> generatedTasks = new ArrayList<>();
+    private List<Task> copyClients = new ArrayList<>();
     private int peakClients;
     private int peakHour;
 
@@ -41,7 +42,9 @@ public class SimulationManager implements Runnable{
         {
             int processingTime = (int)((Math.random() * (maxProcessingTime - minProcessingTime)) + minProcessingTime);
             int arrivalTime = (int)((Math.random() * (maxArrivalTime - minArrivalTime)) + minArrivalTime);
-            generatedTasks.add(new Task(i + 1, arrivalTime, processingTime));
+            Task newTask = new Task(i + 1, arrivalTime, processingTime);
+            generatedTasks.add(newTask);
+            copyClients.add(newTask); //fac o copie cu totalul clientilor
         }
 
         Collections.sort(generatedTasks, new Comparator<Task>() {
@@ -76,7 +79,8 @@ public class SimulationManager implements Runnable{
 
             //daca am procesat toti clientii
             if(generatedTasks.isEmpty() && queuesEmpty()) {
-                print("Average service time: " + String.format("%.2f", computeWaitingAvg()) + "\n");
+                print("Average service time: " + String.format("%.2f", computeServiceAvg()) + "\n");
+                print("Average waiting time: " + String.format("%.2f", computeWaitingAvg()) + "\n");
                 print("Peak hour: " + peakHour + "(" + peakClients + " clients)\n");
                 break;
             }
@@ -89,8 +93,9 @@ public class SimulationManager implements Runnable{
             }
             currentTime++;
         }
-        if(currentTime == timeLimit) {   //daca am ajuns la time limit
-            print("Average service time: " + String.format("%.2f", computeWaitingAvg()) + "(time limit exceeded)\n");
+        if(currentTime == timeLimit + 1) {   //daca am ajuns la time limit
+            print("Average service time: " + String.format("%.2f", computeServiceAvg()) + "(time limit exceeded)\n");
+            print("Average waiting time: " + String.format("%.2f", computeWaitingAvg()) + "\n");
             print("Peak hour: " + peakHour + " (" + peakClients + " clients)\n");
         }
     }
@@ -152,7 +157,7 @@ public class SimulationManager implements Runnable{
     }
 
     //media
-    private double computeWaitingAvg() {
+    private double computeServiceAvg() {
         double result = 0;
         for(Server server : scheduler.getServers()) {
             result += server.getServicePeriod().get();
@@ -168,6 +173,14 @@ public class SimulationManager implements Runnable{
         }
 
         return totalClients;
+    }
+    private double computeWaitingAvg() {
+        double result = 0;
+        for(Task client : copyClients) {
+            result += client.getWaitingTime();
+        }
+
+        return result / numberOfClients;
     }
 
     public static void main(String[] args) {
