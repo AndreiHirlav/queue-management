@@ -1,0 +1,3 @@
+This applications assigns multiple clients to a certain number of queues such that the waiting time is minimized, having two strategies to move a client to a certain queue: shortest time until service or shortest queue.
+It also features a graphical user interface for setting up the simulation ( entering the number of clients, number of queues, max simulation time, minimum and maximum arrival time of clients/service time), and for displaying the real-time queue evolution. 
+Also, at the end of the simulation it displays the average waiting time, average service time and the peak hour of the simulation.
